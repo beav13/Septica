@@ -7,11 +7,14 @@
 <script type="text/javascript" src="scripts/plugins/jquery-2.1.1.js"></script>
 <script type="text/javascript" src="scripts/plugins/createjs-2013.12.12.min.js"></script>
 <script type="text/javascript" src="scripts/septica.js"></script>
+<script type="text/javascript" src="scripts/preload.js"></script>
 
 <script>
 
 function startApp(){
-	console.log("start");
+	// initialize Septica
+	var game = new Septica();
+	game.start();
 }
 
 window.onload = startApp;
