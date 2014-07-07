@@ -4,8 +4,16 @@ function Septica() {
 		console.log("starting Septica");
 
 		// send resources to load to the preloader
-		var preloader = new Preload([{id:"json", src:"resources/deck.json"}]);
-		preloader.loadResources();
+		var preloader = new PreloadVlad.getInstance();
+		preloader.loadResources(onLoadProgress, onPhaseComplete, [{id:"deck", src:"resources/deck.json"}]);
+	}
+
+	function onPhaseComplete() {
+
+	}
+
+	function onLoadProgress() {
+
 	}
 
 }

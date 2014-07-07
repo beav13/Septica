@@ -1,57 +1,98 @@
 // loads resources in multiple phases and notifies progress for each one
 // will also go through json like deck.json to get the resource paths to 
 // load additional images, besides the ones passed in imgRes
-function Preload(jsonRes, imgRes, soundRes, progressCallback, phaseCallback) {
-	this.jsonRes = jsonRes;
-	this.imgRes = imgRes;
-	this.soundRes = soundRes;
 
-	// send false when loading resources locally, switch to true when using XHR
-	this.queue = new createjs.LoadQueue(false); 
-	this.queue.addEventListener("complete", this.onComplete);
+var PreloadVlad = (function(){
+	var instance = null;
 
-	this.manifest = null;
+	function Preload1() {		
 
-	this.loadResources = function() {
-		this.loadJson();
-		this.loadImg();
-		this.loadSound();
+		manifest = null;
+
+		this.loadResources = function(progressCallback, phaseCallback, jsonRes, imgRes, soundRes) {
+			this.jsonRes = jsonRes;
+			this.imgRes = imgRes;
+			this.soundRes = soundRes;
+
+			this.loadJson();
+			// this.loadImg();
+			// this.loadSound();
+		}
+
+		this.loadJson = function() {
+			// load JSON resources
+			console.log("JSON files to load " + this.jsonRes);
+			manifest = this.jsonRes;
+			// new preload object
+
+			if (manifest) {
+				console.log("Start loading JSON resources");
+				queue = new createjs.LoadQueue(); 
+				queue.addEventListener("complete", onJsonComplete);
+				queue.addEventListener("fileload", onJsonFileLoad);
+
+				queue.loadManifest(manifest);
+			}
+		}
+
+		this.loadImg = function() {
+			// load Image resources
+			console.log("Images to load " + this.imgRes);
+			manifest = this.imgRes;
+
+			if (manifest) {
+				console.log("Start loading Image resources");
+				queue = new createjs.LoadQueue(); 
+				queue.addEventListener("complete", onImgComplete);
+				queue.addEventListener("fileload", onImgFileLoad);
+				queue.addEventListener("progress", onImgProgress);
+
+				queue.loadManifest(manifest);
+			}
+		}
+
+		function onJsonComplete(event) {
+			console.log("JSON queue load complete");
+			instance.loadImg();
+		}
+
+		function onJsonFileLoad(event) {
+			console.log("JSON file loaded");
+			if (event.item.id === "deck") {
+				manifest = [];
+				for (var i = 0; i < event.result.cards.length; i++) {
+					var card = event.result.cards[i];
+					if (instance.imgRes == null) {
+						instance.imgRes = [];
+					}
+					instance.imgRes.push({id:(card.alias + card.type) , src:card.imagePath});
+				}
+			}
+		}
+
+		function onImgComplete(event) {
+			console.log("Image queue load complete");
+		}
+
+		function onImgFileLoad(event) {
+			console.log("Image file loaded" + event.item);
+		}
+
+		function onImgProgress(event) {
+			console.log("Image load queue progress");
+		}
+
 	}
 
-	this.loadJson = function() {
-		// load JSON resources
-		console.log("Start loading JSON resources");
-		console.log(jsonRes);
-		this.manifest = jsonRes;
-		// new preload object
+	return {
+		getInstance: function(){
+			if(instance == null){
+				instance = new Preload1();
+			}
 
-		if (this.manifest) {
-			console.log("Something to load");
-			this.queue.loadManifest(this.manifest);
+			return instance;
 		}
 	}
 
-	this.loadImg = function() {
-		// load Image resources
-		console.log("Start loading Image resources");
-		console.log(imgRes);
-		this.manifest = imgRes;
-		if (this.manifest) {
-			console.log("Something to load");
-		}
-	}
+})();
 
-	this.loadSound = function() {
-		// load Sound resources
-		console.log("Start loading Sound resources");
-		console.log(soundRes);
-		this.manifest = soundRes;
-		if (this.manifest) {
-			console.log("Something to load");
-		}
-	}
-
-	this.onComplete = function() {
-		console.log("load complete");
-	}
-}
