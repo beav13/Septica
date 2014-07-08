@@ -7,6 +7,7 @@ var Preload = (function(){
 
 	function Preload1() {
 		var self = this;
+
 		this.jsonRes;
 		this.imgRes;
 		this.soundRes;
@@ -28,8 +29,6 @@ var Preload = (function(){
 
 		this.loadJson = function() {
 			// load JSON resources
-			console.log("JSON files to load " + this.jsonRes);
-
 			if (this.jsonRes) {
 				console.log("Start loading JSON resources");
 				this.jsonQueue = new createjs.LoadQueue(); 
@@ -42,8 +41,6 @@ var Preload = (function(){
 
 		this.loadImg = function() {
 			// load Image resources
-			console.log("Images to load " + this.imgRes);
-
 			if (this.imgRes) {
 				console.log("Start loading Image resources");
 				this.imgQueue = new createjs.LoadQueue(); 
@@ -56,8 +53,7 @@ var Preload = (function(){
 		}
 
 		this.loadSound = function() {
-			console.log("Sounds to load " + this.soundRes);
-
+			// load Sound resources
 			if (this.soundRes) {
 				console.log("Start loading Sound resources");
 				queue = new createjs.LoadQueue();
@@ -76,16 +72,19 @@ var Preload = (function(){
 			}
 			for (var i = 0; i < cards.length; i++) {
 				var card = cards[i];
-				this.imgRes.push({id:(card.alias + card.type) , src:card.imagePath});
+				this.imgRes.push({id : card.alias , src : card.imagePath});
 			}
 		}
 
-		this.getImages = function() {
-			return this.imgQueue;
+		this.getImage = function(key) {
+			return this.imgQueue.getResult(key);
+		}
+
+		this.getDeck = function() {
+			return this.jsonQueue.getResult("deck").cards;
 		}
 
 		function onJsonFileLoad(event) {
-			console.log("JSON file loaded");
 			// if loaded JSON is the deck, add the image resources to the image manifest
 			if (event.item.id === "deck") {
 				self.addDeckImages(event.result.cards);
@@ -93,31 +92,29 @@ var Preload = (function(){
 		}
 
 		function onJsonComplete(event) {
-			console.log("JSON queue load complete");
 			// go on and load images
 			self.loadImg();
 		}
 
 		function onImgComplete(event) {
-			console.log("Image queue load complete");
 			// go on and load sound
 			self.loadSound();
 		}
 
 		function onImgFileLoad(event) {
-			console.log("Image file loaded " + event.item);
+			// console.log("Image file loaded " + event.item);
 		}
 
 		function onImgProgress(event) {
-			console.log("Image load queue progress");
+			// console.log("Image load queue progress");
 		}
 
 		function onSoundFileLoad(event) {
-			console.log("Sound file loaded " + event.item);
+			// console.log("Sound file loaded " + event.item);
 		}
 
 		function onSoundComplete(event) {
-			console.log("Sound queue load complete");
+			// console.log("Sound queue load complete");
 		}
 
 	}

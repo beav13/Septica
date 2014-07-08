@@ -12,8 +12,14 @@
 <script>
 
 function startApp(){
+	// disable image smoothing (cards look shitty this way)
+	var canvas = document.getElementById("stage");
+	var ctx = canvas.getContext('2d');
+	ctx.webkitImageSmoothingEnabled = false;
+
 	// initialize Septica
 	var game = new Septica("stage");
+
 	game.start();
 }
 
@@ -25,7 +31,7 @@ window.onload = startApp;
 
 <body>
 
-<canvas id="stage">
+<canvas id="stage" width="500" height="500">
 </canvas>
 
 </body>

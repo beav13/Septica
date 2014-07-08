@@ -1,193 +1,193 @@
 {
 	"cards":[
 		{
-			"alias": "A",
+			"alias": "AH",
 			"value": 1,
 			"type": "Hearts",
 			"imagePath": "images/cards/hearts_A.png"
 		},
 		{
-			"alias": "7",
+			"alias": "7H",
 			"value": 7,
 			"type": "Hearts",
 			"imagePath": "images/cards/hearts_7.png"
 		},
 		{
-			"alias": "8",
+			"alias": "8H",
 			"value": 8,
 			"type": "Hearts",
 			"imagePath": "images/cards/hearts_8.png"
 		},
 		{
-			"alias": "9",
+			"alias": "9H",
 			"value": 9,
 			"type": "Hearts",
 			"imagePath": "images/cards/hearts_9.png"
 		},
 		{
-			"alias": "10",
+			"alias": "10H",
 			"value": 10,
 			"type": "Hearts",
 			"imagePath": "images/cards/hearts_10.png"
 		},
 		{
-			"alias": "J",
+			"alias": "JH",
 			"value": 12,
 			"type": "Hearts",
 			"imagePath": "images/cards/hearts_J.png"
 		},
 		{
-			"alias": "Q",
+			"alias": "QH",
 			"value": 13,
 			"type": "Hearts",
 			"imagePath": "images/cards/hearts_Q.png"
 		},
 		{
-			"alias": "K",
+			"alias": "KH",
 			"value": 14,
 			"type": "Hearts",
 			"imagePath": "images/cards/hearts_K.png"
 		},
 		{
-			"alias": "A",
+			"alias": "AD",
 			"value": 1,
 			"type": "Diamonds",
 			"imagePath": "images/cards/diamonds_A.png"
 		},
 		{
-			"alias": "7",
+			"alias": "7D",
 			"value": 7,
 			"type": "Diamonds",
 			"imagePath": "images/cards/diamonds_7.png"
 		},
 		{
-			"alias": "8",
+			"alias": "8D",
 			"value": 8,
 			"type": "Diamonds",
 			"imagePath": "images/cards/diamonds_8.png"
 		},
 		{
-			"alias": "9",
+			"alias": "9D",
 			"value": 9,
 			"type": "Diamonds",
 			"imagePath": "images/cards/diamonds_9.png"
 		},
 		{
-			"alias": "10",
+			"alias": "10D",
 			"value": 10,
 			"type": "Diamonds",
 			"imagePath": "images/cards/diamonds_10.png"
 		},
 		{
-			"alias": "J",
+			"alias": "JD",
 			"value": 12,
 			"type": "Diamonds",
 			"imagePath": "images/cards/diamonds_J.png"
 		},
 		{
-			"alias": "Q",
+			"alias": "QD",
 			"value": 13,
 			"type": "Diamonds",
 			"imagePath": "images/cards/diamonds_Q.png"
 		},
 		{
-			"alias": "K",
+			"alias": "KD",
 			"value": 14,
 			"type": "Diamonds",
 			"imagePath": "images/cards/diamonds_K.png"
 		},
 		{
-			"alias": "A",
+			"alias": "AS",
 			"value": 1,
 			"type": "Spades",
 			"imagePath": "images/cards/spades_A.png"
 		},
 		{
-			"alias": "7",
+			"alias": "7S",
 			"value": 7,
 			"type": "Spades",
 			"imagePath": "images/cards/spades_7.png"
 		},
 		{
-			"alias": "8",
+			"alias": "8S",
 			"value": 8,
 			"type": "Spades",
 			"imagePath": "images/cards/spades_8.png"
 		},
 		{
-			"alias": "9",
+			"alias": "9S",
 			"value": 9,
 			"type": "Spades",
 			"imagePath": "images/cards/spades_9.png"
 		},
 		{
-			"alias": "10",
+			"alias": "10S",
 			"value": 10,
 			"type": "Spades",
 			"imagePath": "images/cards/spades_10.png"
 		},
 		{
-			"alias": "J",
+			"alias": "JS",
 			"value": 12,
 			"type": "Spades",
 			"imagePath": "images/cards/spades_J.png"
 		},
 		{
-			"alias": "Q",
+			"alias": "QS",
 			"value": 13,
 			"type": "Spades",
 			"imagePath": "images/cards/spades_Q.png"
 		},
 		{
-			"alias": "K",
+			"alias": "KS",
 			"value": 14,
 			"type": "Spades",
 			"imagePath": "images/cards/spades_K.png"
 		},
 		{
-			"alias": "A",
+			"alias": "AC",
 			"value": 1,
 			"type": "Clubs",
 			"imagePath": "images/cards/clubs_A.png"
 		},
 		{
-			"alias": "7",
+			"alias": "7C",
 			"value": 7,
 			"type": "Clubs",
 			"imagePath": "images/cards/clubs_7.png"
 		},
 		{
-			"alias": "8",
+			"alias": "8C",
 			"value": 8,
 			"type": "Clubs",
 			"imagePath": "images/cards/clubs_8.png"
 		},
 		{
-			"alias": "9",
+			"alias": "9C",
 			"value": 9,
 			"type": "Clubs",
 			"imagePath": "images/cards/clubs_9.png"
 		},
 		{
-			"alias": "10",
+			"alias": "10C",
 			"value": 10,
 			"type": "Clubs",
 			"imagePath": "images/cards/clubs_10.png"
 		},
 		{
-			"alias": "J",
+			"alias": "JC",
 			"value": 12,
 			"type": "Clubs",
 			"imagePath": "images/cards/clubs_J.png"
 		},
 		{
-			"alias": "Q",
+			"alias": "QC",
 			"value": 13,
 			"type": "Clubs",
 			"imagePath": "images/cards/clubs_Q.png"
 		},
 		{
-			"alias": "K",
+			"alias": "KC",
 			"value": 14,
 			"type": "Clubs",
 			"imagePath": "images/cards/clubs_K.png"
