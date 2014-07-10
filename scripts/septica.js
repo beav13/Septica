@@ -1,4 +1,4 @@
-function Septica() {
+function Septica(params) {
 	var self = this;
 
 	this.stage;
@@ -9,12 +9,20 @@ function Septica() {
 		this.stage = new createjs.Stage("stage");
 
 		// send resources to load to the preloader
-		var preloader = new Preload.getInstance();
-		preloader.loadResources(onLoadProgress, onPhaseComplete, [{id:"deck", src:"resources/deck.json"}]);
+		var preloader = new PreloadSeptica.getInstance();
+
+		// define phases and what resources to load for each phase
+		var jsonPhase = { id: "JSON", text: "Loading JSON", manifest: [{id:"deck", src:"resources/deck.json"}] };
+		var imgPhase = { id: "IMG", text: "Loading Images" };
+		var soundPhase = { id: "SOUND", text: "Loading Sound", manifest: [{id:"test", src:"test -- will show 404 in the console"}] };
+
+		var phases = [jsonPhase, imgPhase, soundPhase];
+
+		preloader.loadResources(onLoadComplete, this.stage, phases);
 	}
 
-	function onPhaseComplete() {
-		var R = Preload.getInstance();
+	function onLoadComplete() {
+		var R = PreloadSeptica.getInstance();
 
 		// get the full deck loaded from the JSON file
 		var deck = R.getDeck();
@@ -33,7 +41,7 @@ function Septica() {
 			self.stage.addChild(bmp);
 			bmp.x = x;
 			bmp.y = y;
-			bmp.rotation = 2;
+			// bmp.rotation = 2;
 
 			gameDeck.splice(card, 1);
 
@@ -47,9 +55,4 @@ function Septica() {
 		// update the stage
 		self.stage.update();
 	}
-
-	function onLoadProgress() {
-
-	}
-
 }
