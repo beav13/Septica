@@ -22,6 +22,8 @@ function Septica(params) {
 	}
 
 	function onLoadComplete() {
+		return;
+		
 		var R = PreloadSeptica.getInstance();
 
 		// get the full deck loaded from the JSON file

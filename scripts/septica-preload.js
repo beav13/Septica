@@ -74,16 +74,21 @@ var PreloadSeptica = (function(){
 		}
 
 		function phaseStart(phase) {
-			var text = new createjs.Text(phase.text, "20px Arial", "#000000");
-			self.stage.addChild(text);
-			text.y += self.phaseIndex * text.getMeasuredLineHeight();
+			var txtPhaseName = new createjs.Text(phase.text, "20px Arial", "#000000");
+			self.stage.addChild(txtPhaseName);
+			txtPhaseName.y += self.phaseIndex * txtPhaseName.getMeasuredLineHeight();
 
-			self.phaseDisplayList.push({id:phase.id, text:text});
+			var txtPercentage = new createjs.Text("0%", "20px Arial", "#000000");
+			self.stage.addChild(txtPercentage);
+			txtPercentage.x = 10 + txtPhaseName.getMeasuredWidth();
+			txtPercentage.y = txtPhaseName.y;
+
+			self.phaseDisplayList.push({id:phase.id, text:txtPhaseName, perc:txtPercentage});
 			self.stage.update();
 		}
 
 		function phaseProgress(event) {
-			// TODO
+			showProgress(event.progress);
 		}
 
 		function fileLoad(event) {
@@ -94,12 +99,24 @@ var PreloadSeptica = (function(){
 		}
 
 		function phaseEnd(event) {
+			// show completed progress
+			showProgress(1);
+
 			// will store the event target (load queue) in the results map with the phase name key
 			var key = self.phases[self.phaseIndex].id;
 			self.results[key] = event.target;
 
 			self.phaseIndex++;
 			self.load();
+		}
+
+		function showProgress(progress) {
+			var loaded = progress * 100;			
+			if (loaded > 0) {
+				var perc = self.phaseDisplayList[self.phaseIndex].perc;
+				perc.text = loaded + "%";
+			}
+			self.stage.update();
 		}
 
 
