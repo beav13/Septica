@@ -22,8 +22,23 @@ function Septica(params) {
 	}
 
 	function onLoadComplete() {
-		return;
-		
+		// renderDeck();
+		showMenu();
+	}
+
+	function showMenu() {
+		var htmlElement = document.getElementById("hello");
+		var domElement = new createjs.DOMElement(htmlElement);
+		domElement.x = 200;
+		domElement.y = 200;
+		domElement.rotation = 30;
+		domElement.visible = true;
+
+		self.stage.addChild(domElement);
+		self.stage.update();
+	}
+
+	function renderDeck() {
 		var R = PreloadSeptica.getInstance();
 
 		// get the full deck loaded from the JSON file
