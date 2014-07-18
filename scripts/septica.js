@@ -1,12 +1,17 @@
-function Septica(params) {
-	var self = this;
+function Septica() {
+	
+	stage = new createjs.Stage(arguments[0]);
+	// wtf ?
+	mode = arguments[1];
+	// list of players (those not contained in hotseatPlayers/remotePlayers are AI)
+	players = arguments[2];
+	// list of indexes from the player list which are playing from this client
+	hotseatPlayers = arguments[3];
+	// list of human players connected remotely
+	remotePlayers = arguments[4];
 
-	this.stage;
-
-	this.start = function(canvasName) {
+	this.start = function() {
 		console.log("starting Septica");
-
-		this.stage = new createjs.Stage("stage");
 
 		// send resources to load to the preloader
 		var preloader = new PreloadSeptica.getInstance();
@@ -15,10 +20,9 @@ function Septica(params) {
 		var jsonPhase = { id: "JSON", text: "Loading JSON", manifest: [{id:"deck", src:"resources/deck.json"}] };
 		var imgPhase = { id: "IMG", text: "Loading Images" };
 		var soundPhase = { id: "SOUND", text: "Loading Sound", manifest: [{id:"test", src:"test -- will show 404 in the console"}] };
-
 		var phases = [jsonPhase, imgPhase, soundPhase];
 
-		preloader.loadResources(onLoadComplete, this.stage, phases);
+		preloader.loadResources(onLoadComplete, stage, phases);
 	}
 
 	function onLoadComplete() {
@@ -34,8 +38,8 @@ function Septica(params) {
 		domElement.rotation = 30;
 		domElement.visible = true;
 
-		self.stage.addChild(domElement);
-		self.stage.update();
+		stage.addChild(domElement);
+		stage.update();
 	}
 
 	function renderDeck() {
@@ -55,7 +59,7 @@ function Septica(params) {
 		while (gameDeck.length > 0) {
 			var card = Math.floor(Math.random() * deck.length);
 			var bmp = new createjs.Bitmap(R.getImage(deck[card].alias));
-			self.stage.addChild(bmp);
+			stage.addChild(bmp);
 			bmp.x = x;
 			bmp.y = y;
 			// bmp.rotation = 2;
@@ -70,6 +74,6 @@ function Septica(params) {
 		}
 
 		// update the stage
-		self.stage.update();
+		stage.update();
 	}
 }
