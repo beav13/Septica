@@ -26,12 +26,13 @@ function Septica() {
 	}
 
 	function onLoadComplete() {
-		// renderDeck();
+		renderDeck();
 		showMenu();
 	}
 
 	function showMenu() {
 		var htmlElement = document.getElementById("hello");
+		htmlElement.style.display = "block";
 		var domElement = new createjs.DOMElement(htmlElement);
 		domElement.x = 200;
 		domElement.y = 200;
@@ -62,7 +63,7 @@ function Septica() {
 			stage.addChild(bmp);
 			bmp.x = x;
 			bmp.y = y;
-			// bmp.rotation = 2;
+			// bmp.rotation = 5;
 
 			gameDeck.splice(card, 1);
 
