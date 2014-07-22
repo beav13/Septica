@@ -26,9 +26,13 @@ function Septica() {
 	}
 
 	function onLoadComplete() {
+		requestAnimationFrame(render);
+	}
+
+	function render(){
+		requestAnimationFrame(render);
 		renderDeck(stage);
 		showMenu(stage);
 	}
 
-	
 }
