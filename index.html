@@ -4,6 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <link rel="shortcut icon" href="images/septica.ico">
 <title>Septica</title>
+<link rel="stylesheet" type="text/css" href="styles/septica.css">
 <script type="text/javascript" src="scripts/plugins/jquery-2.1.1.js"></script>
 <script type="text/javascript" src="scripts/plugins/createjs-2013.12.12.min.js"></script>
 <script type="text/javascript" src="scripts/septica.js"></script>
@@ -14,6 +15,16 @@
 function startApp(){
 	// disable image smoothing (cards look shitty this way)
 	var canvas = document.getElementById("stage");
+	//fuck you world
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+
+	//why you do this?why you do this?
+	window.onresize = function(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;	
+	}
+
 	var ctx = canvas.getContext('2d');
 	ctx.webkitImageSmoothingEnabled = false;
 
@@ -30,7 +41,7 @@ window.onload = startApp;
 
 <body>
 <div id="hello" style="display:none"> hello there ! </div>
-<canvas id="stage" width="500" height="500">
+<canvas id="stage">
 </canvas>
 
 </body>
