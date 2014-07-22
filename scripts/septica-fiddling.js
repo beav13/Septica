@@ -1,4 +1,5 @@
-function showMenu(stage) {
+
+function testHtmlElement(stage) {
 	var htmlElement = document.getElementById("hello");
 	var domElement = new createjs.DOMElement(htmlElement);
 	domElement.x = 200;
@@ -10,7 +11,8 @@ function showMenu(stage) {
 	stage.update();
 }
 
-function renderDeck(stage) {
+// renders the whole deck in a random manner
+function testDeckRender(stage) {
 	var R = PreloadSeptica.getInstance();
 
 	// get the full deck loaded from the JSON file

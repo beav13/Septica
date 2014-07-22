@@ -31,8 +31,29 @@ function Septica() {
 
 	function render(){
 		requestAnimationFrame(render);
-		renderDeck(stage);
-		showMenu(stage);
+		showMainMenu();
+
+		// test sh...tuff
+		// testDeckRender(stage);
+		testHtmlElement(stage);
+	}
+
+	function showMainMenu() {
+		// draw graphics
+		var g = new createjs.Graphics();
+		g.beginFill("#000000").drawRect(0, 0, 100, 30);
+
+		// create button "shape"
+		var button = new createjs.Shape(g);
+		// need to specify the bounds explicitly
+		button.setBounds(0, 0, 100, 30);
+
+		stage.addChild(button);
+		stage.update();
+		
+		// position
+		button.x = (stage.canvas.width - button.getBounds().width) / 2;
+		button.y = (stage.canvas.height - button.getBounds().height) / 2;
 	}
 
 }

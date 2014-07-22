@@ -14,7 +14,6 @@
 <script>
 
 function startApp(){
-	// disable image smoothing (cards look shitty this way)
 	var canvas = document.getElementById("stage");
 	//fuck you world
 	canvas.width = window.innerWidth;
@@ -26,6 +25,7 @@ function startApp(){
 		canvas.height = window.innerHeight;	
 	}
 
+	// disable image smoothing (cards look shitty this way)
 	var ctx = canvas.getContext('2d');
 	ctx.webkitImageSmoothingEnabled = false;
 
