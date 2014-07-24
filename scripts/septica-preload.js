@@ -44,8 +44,18 @@ var PreloadSeptica = (function(){
 					loadQueue.loadManifest(phase.manifest);
 				}
 			} else {
+				//emove helper texts
+				this.removeProgressTexts();
+			
 				// signal that all phases finished loading
 				this.completeCallback();
+			}
+		}
+		
+		this.removeProgressTexts = function(){
+			for(var i = 0 ; i < this.phaseDisplayList.length ; i++){			
+				self.stage.removeChild(this.phaseDisplayList[i].text);
+				self.stage.removeChild(this.phaseDisplayList[i].perc);			
 			}
 		}
 

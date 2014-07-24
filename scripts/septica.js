@@ -3,12 +3,19 @@ function Septica() {
 	stage = new createjs.Stage(arguments[0]);
 	// wtf ?
 	mode = arguments[1];
-	// list of players (those not contained in hotseatPlayers/remotePlayers are AI)
+	// list of players (those not contained in remotePlayers are AI)
 	players = arguments[2];
-	// list of indexes from the player list which are playing from this client
-	hotseatPlayers = arguments[3];
 	// list of human players connected remotely
-	remotePlayers = arguments[4];
+	remotePlayers = arguments[3];
+	
+	//original cards
+	this.allCardModels;
+	
+	//deck cards that will be shuffled
+	this.deck;
+	
+	//cards that have been played
+	this.playedDeck;
 
 	this.start = function() {
 		console.log("starting Septica");
@@ -26,16 +33,33 @@ function Septica() {
 	}
 
 	function onLoadComplete() {
+		showMainMenu();
 		requestAnimationFrame(render);
 	}
-
+	
 	function render(){
-		requestAnimationFrame(render);
-		showMainMenu();
+		requestAnimationFrame(render);		
+		stage.update();
 
 		// test sh...tuff
 		// testDeckRender(stage);
-		testHtmlElement(stage);
+		//testHtmlElement(stage);
+	}
+	
+	function startGame(){
+		console.log("Start game.");
+		
+		var preloader = new PreloadSeptica.getInstance();
+		this.allCardModels = preloader.getDeck();
+		
+		//create deck
+		this.deck = new subDeck();
+		//add all cards
+		this.deck.addCards(this.allCardModels);
+		//shuffle deck
+		this.deck.shuffle();
+		
+		
 	}
 
 	function showMainMenu() {
@@ -44,16 +68,82 @@ function Septica() {
 		g.beginFill("#000000").drawRect(0, 0, 100, 30);
 
 		// create button "shape"
-		var button = new createjs.Shape(g);
+		var buttonShape = new createjs.Shape(g);
 		// need to specify the bounds explicitly
-		button.setBounds(0, 0, 100, 30);
-
-		stage.addChild(button);
-		stage.update();
+		buttonShape.setBounds(0, 0, 100, 30);
+		
+		var buttonText = new createjs.Text("Start", "20px Arial", "#ffffff");
+		
+		buttonText.x = (buttonShape.getBounds().width - buttonText.getBounds().width) / 2;
+		buttonText.y = (buttonShape.getBounds().height - buttonText.getBounds().height) / 2;
+		
+		var button = new createjs.Container();
+		
+		button.addChild(buttonShape);
+		button.addChild(buttonText);
 		
 		// position
 		button.x = (stage.canvas.width - button.getBounds().width) / 2;
 		button.y = (stage.canvas.height - button.getBounds().height) / 2;
+		
+		function windowResizeHandler(){
+			button.x = (stage.canvas.width - button.getBounds().width) / 2;
+			button.y = (stage.canvas.height - button.getBounds().height) / 2;
+		}
+		
+		$(window).on("resize", windowResizeHandler);
+		
+		button.addEventListener("click", function(){
+			stage.removeChild(button);
+			$(window).off("resize", windowResizeHandler);
+			startGame();
+		})
+		
+		stage.addChild(button);
+		stage.update();
 	}
 
+}
+
+function subDeck(){
+
+	var cards = [];
+	
+	function arrayShuffle(theArray) {
+		var len = theArray.length;
+		var i = len;
+		 while (i--) {
+			var p = parseInt(Math.random()*len);
+			var t = theArray[i];
+			theArray[i] = theArray[p];
+			theArray[p] = t;
+		}
+	};
+	
+	this.addCards = function(c){
+		if(c instanceof Array){
+			for(var i = 0 ; i < c.length ; i++){
+				cards.push(c[i]);		
+			}
+		} else{
+			cards.push(c);		
+		}		
+	}
+	
+	this.removeCard = function(card){
+		for(var i = 0 ; i < cards.length ; i++){
+			if(cards[i].alias == card.alias){
+				delete cards[i];
+			}			
+		}		
+	}
+	
+	this.shuffle = function(){
+		arrayShuffle(cards);
+	}
+	
+	//temporary, for debug
+	this.getCards = function(){
+		return cards;
+	}
 }
