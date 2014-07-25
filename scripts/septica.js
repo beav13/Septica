@@ -1,12 +1,15 @@
 function Septica() {
 	
 	stage = new createjs.Stage(arguments[0]);
+
 	// wtf ?
 	mode = arguments[1];
 	// list of players (those not contained in remotePlayers are AI)
 	players = arguments[2];
 	// list of human players connected remotely
 	remotePlayers = arguments[3];
+	// player index
+	playerIndex = arguments[4]
 	
 	//original cards
 	this.allCardModels;
@@ -25,7 +28,7 @@ function Septica() {
 
 		// define phases and what resources to load for each phase
 		var jsonPhase = { id: "JSON", text: "Loading JSON", manifest: [{id:"deck", src:"resources/deck.json"}] };
-		var imgPhase = { id: "IMG", text: "Loading Images" };
+		var imgPhase = { id: "IMG", text: "Loading Images", manifest: [{id:"card_back", src:"images/card_back.png" }]};
 		var soundPhase = { id: "SOUND", text: "Loading Sound", manifest: [{id:"test", src:"test -- will show 404 in the console"}] };
 		var phases = [jsonPhase, imgPhase, soundPhase];
 
@@ -40,10 +43,6 @@ function Septica() {
 	function render(){
 		requestAnimationFrame(render);		
 		stage.update();
-
-		// test sh...tuff
-		// testDeckRender(stage);
-		//testHtmlElement(stage);
 	}
 	
 	function startGame(){
@@ -59,7 +58,7 @@ function Septica() {
 		//shuffle deck
 		this.deck.shuffle();
 		
-		
+		drawBoard();
 	}
 
 	function showMainMenu() {
@@ -101,6 +100,38 @@ function Septica() {
 		
 		stage.addChild(button);
 		stage.update();
+	}
+	
+	function drawBoard() {
+		// draw middle deck
+		var R = new PreloadSeptica.getInstance();
+		var cardBack = new createjs.Bitmap(R.getImage("card_back"));
+		
+		var middlePot = new createjs.Container();
+		for (var i = 0; i < 3; i++) {
+			var card = cardBack.clone();
+			card.x += i * 2;
+			card.y -= i * 2;
+			middlePot.addChild(card);
+		}
+		// center pot
+		middlePot.x = (stage.canvas.width - middlePot.getBounds().width) / 2;
+		middlePot.y = (stage.canvas.height - middlePot.getBounds().height) /2;
+		stage.addChild(middlePot);
+		
+		// draw player hands
+		var cardWidth = cardBack.clone().getBounds().width;
+		console.log(cardWidth);
+		
+		for (var i = 0; i < players.length; i++) {
+			var hand = new createjs.Container();
+			for (var i = 0; i < 5; i++) {
+				var card = cardBack.clone();
+				card.x = i * cardWidth / 3;
+				hand.addChild(card);
+			}
+			stage.addChild(hand);
+		}
 	}
 
 }
