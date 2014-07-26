@@ -122,6 +122,13 @@ function Septica() {
 		// center pot
 		middlePot.x = (stage.canvas.width - middlePot.getBounds().width) / 2;
 		middlePot.y = (stage.canvas.height - middlePot.getBounds().height) /2;
+
+		middlePot.stageResizeHandler = function(){
+			middlePot.x = (stage.canvas.width - middlePot.getBounds().width) / 2;
+			middlePot.y = (stage.canvas.height - middlePot.getBounds().height) /2;
+		}
+		$(window).on("resize", middlePot.stageResizeHandler);
+		
 		stage.addChild(middlePot);
 	}
 
@@ -233,5 +240,34 @@ function subDeck(){
 	//temporary, for debug
 	this.getCards = function(){
 		return cards;
+	}
+}
+
+function Player(type, id){
+	
+	//"ai" or "human" or "internet"
+	this.type = type;
+
+	//id will only be present if its a human internet player
+	this.id = id;
+
+	//keep the deck private
+	var deck = new subDeck();
+
+	//place a card down and remove it from subdeck
+	this.giveCard = function(card){
+
+	}
+
+	//accept card from pile and add it to subdeck
+	this.takeCard = function(card){
+
+	}
+
+	//function to be called when its this players turn,
+	//it will calculate if the player has moves, if it should 
+	//add listeners(if human) or calculate move(if ai)
+	this.consumeMove = function(){
+
 	}
 }
