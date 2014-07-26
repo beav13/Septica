@@ -103,6 +103,11 @@ function Septica() {
 	}
 	
 	function drawBoard() {
+		drawPlayerPositions();
+		drawMiddlePot();
+	}
+
+	function drawMiddlePot() {
 		// draw middle deck
 		var R = new PreloadSeptica.getInstance();
 		var cardBack = new createjs.Bitmap(R.getImage("card_back"));
@@ -118,21 +123,73 @@ function Septica() {
 		middlePot.x = (stage.canvas.width - middlePot.getBounds().width) / 2;
 		middlePot.y = (stage.canvas.height - middlePot.getBounds().height) /2;
 		stage.addChild(middlePot);
-		
-		// draw player hands
-		var cardWidth = cardBack.clone().getBounds().width;
-		console.log(cardWidth);
-		
-		for (var i = 0; i < players.length; i++) {
-			var hand = new createjs.Container();
-			for (var i = 0; i < 5; i++) {
-				var card = cardBack.clone();
-				card.x = i * cardWidth / 3;
-				hand.addChild(card);
-			}
+	}
+
+	function drawPlayerPositions(playerIndex) {
+		// x = cx + r * cos(a)
+		// y = cy + r * sin(a)
+
+		// 
+		var circle = new createjs.Shape();
+		var cx = stage.canvas.width / 2;
+		var cy = stage.canvas.height / 2;
+		var r = 400;
+		var count = 8 ;// players.length; - this should be the number of players, changed it for debugging purposes
+
+		// this circle represents the "game table" area
+		circle.graphics.beginFill("white").drawCircle(cx, cy, r);
+		circle.alpha = 0.2;
+		stage.addChild(circle);
+
+		// draw card hands for each player
+		var angle = 0;
+		var angleIncrement = 2 * Math.PI / count;
+		for (var i = 0; i < count; i++) {
+			var x = cx + r * Math.cos(angle);
+			var y = cy + r * Math.sin(angle);
+
+			var hand = drawPlayerHand();
+			hand.x = x;
+			hand.y = y;
+			hand.rotation = Math.degrees(angle) + 90;
 			stage.addChild(hand);
+
+			// player center represents the player's position at the table
+			var playerCenter = new createjs.Shape();
+			playerCenter.graphics.beginFill("cyan").drawCircle(x, y, 20);
+			playerCenter.alpha = 0.4;
+			stage.addChild(playerCenter);
+
+			angle += angleIncrement;
 		}
 	}
+
+	function drawPlayerHand() {
+		var R = new PreloadSeptica.getInstance();
+		var cardBack = new createjs.Bitmap(R.getImage("AS"));
+
+		// draw player hands
+		var cardWidth = cardBack.clone().getBounds().width;
+		
+		var hand = new createjs.Container();
+		for (var i = 0; i < 5; i++) {
+			var card = cardBack.clone();
+			card.x = i * cardWidth / 4;
+			hand.addChild(card);
+		}
+
+		return hand;
+	}
+
+	// degrees to radians
+	Math.radians = function(degrees) {
+		return degrees * Math.PI / 180;
+	};
+
+	// radians to degrees
+	Math.degrees = function(radians) {
+		return radians * 180 / Math.PI;
+	};
 
 }
 
