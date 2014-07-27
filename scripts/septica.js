@@ -10,6 +10,9 @@ function Septica() {
 	remotePlayers = arguments[3];
 	// player index
 	playerIndex = arguments[4]
+
+	//save player references
+	var players = [];
 	
 	//original cards
 	this.allCardModels;
@@ -57,8 +60,29 @@ function Septica() {
 		this.deck.addCards(this.allCardModels);
 		//shuffle deck
 		this.deck.shuffle();
+
+		initializePlayers();
 		
 		drawBoard();
+	}
+
+	function initializePlayers(){
+		var p1 = new Player("human", "mear mortal");
+		var p2 = new Player("ai", "Data");
+		var p3 = new Player("ai", "H.A.L.");
+		var p4 = new Player("ai", "Bender");
+
+		players.push(p1);
+		players.push(p2);
+		players.push(p3);
+		players.push(p4);
+
+		//give cards
+		for (var i = 0; i < players.length; i++) {
+			var startingCards = [];
+			startingCards = this.deck.giveCards(5);
+			players[i].takeCard(startingCards);
+		};
 	}
 
 	function showMainMenu() {
@@ -225,12 +249,41 @@ function subDeck(){
 		}		
 	}
 	
-	this.removeCard = function(card){
-		for(var i = 0 ; i < cards.length ; i++){
-			if(cards[i].alias == card.alias){
-				delete cards[i];
-			}			
-		}		
+	this.removeCards = function(card){
+		//keep index of cards to be deleted
+		if(card instanceof Array){
+			for(var i = 0 ; i < card.length ; i++){
+				for(var j = 0 ; j < cards.length ; j++){
+					if(cards[j].alias == card[i].alias){
+						cards.splice(j, 1);
+						break;
+					}			
+				}		
+			}
+		} else{
+			for(var i = 0 ; i < cards.length ; i++){
+				if(cards[i].alias == card.alias){
+					cards.splice(i, 1);
+					break;
+				}
+			}
+		}
+	}
+
+	//TODO check cards exist
+	this.giveCards = function(howMany){
+		if(howMany){
+			var returnCards = [];
+			for(var i = 0 ; i < howMany ; i++){
+				returnCards.push(cards[i]);			
+			}
+			this.removeCards(returnCards);
+			return returnCards;
+		}else{
+			var card = cards[0];
+			this.removeCards(card);
+			return card;
+		}
 	}
 	
 	this.shuffle = function(){
@@ -251,6 +304,9 @@ function Player(type, id){
 	//id will only be present if its a human internet player
 	this.id = id;
 
+	//container to hold cards
+	this.cardContainer = new createjs.Container();
+
 	//keep the deck private
 	var deck = new subDeck();
 
@@ -260,8 +316,8 @@ function Player(type, id){
 	}
 
 	//accept card from pile and add it to subdeck
-	this.takeCard = function(card){
-
+	this.takeCard = function(cards){
+		deck.addCards(cards);
 	}
 
 	//function to be called when its this players turn,
