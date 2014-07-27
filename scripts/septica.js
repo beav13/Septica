@@ -85,6 +85,12 @@ function Septica() {
 		};
 
 		stage.addChild(players[0].cardsContainer);
+		stage.addChild(players[1].cardsContainer);
+		players[1].cardsContainer.y = 200;
+
+		//TODO remove, here for debug
+		window.player = players[0];
+		window.deck = this.deck;
 	}
 
 	function showMainMenu() {
@@ -339,16 +345,20 @@ function Player(type, id){
 
 		if(card instanceof Array){
 			for(var i = 0 ; i < card.length ; i++){
-				var cardBack = new createjs.Bitmap(preload.getImage(card[i].alias));
+				var cardImage = (self.type == "human")?new createjs.Bitmap(preload.getImage(card[i].alias))
+														:new createjs.Bitmap(preload.getImage("card_back"));
 				var cardContainer = new createjs.Container();
-				cardContainer.addChild(cardBack);
+				cardContainer.addChild(cardImage);
+				cardContainer.name = card[i].alias;
 				cardContainer.model = card[i];
 				self.cardsContainer.addChild(cardContainer);
 			}
 		} else{
-			var cardBack = new createjs.Bitmap(R.getImage(card.alias));
+			var cardImage = (self.type == "human")?new createjs.Bitmap(preload.getImage(card[i].alias))
+														:new createjs.Bitmap(preload.getImage("card_back"));
 			var cardContainer = new createjs.Container();
-			cardContainer.addChild(cardBack);
+			cardContainer.addChild(cardImage);
+			cardContainer.name = card[i].alias;
 			cardContainer.model = card;
 			self.cardsContainer.addChild(cardContainer);
 		}
@@ -356,11 +366,12 @@ function Player(type, id){
 
 	function placeCards(){
 		var cardNum = self.cardsContainer.getNumChildren();
-		var x = 0;
+		var x = 0;		
 		for(var i = 0 ; i < cardNum ; i++){
 			var card = self.cardsContainer.getChildAt(i);
+			var space = (self.type == "human")?(card.getBounds().width + 5):20;
 			card.x = x;
-			x += 20;
+			x += space;
 		}
 	}
 }
