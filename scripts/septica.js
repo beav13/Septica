@@ -83,6 +83,8 @@ function Septica() {
 			startingCards = this.deck.giveCards(5);
 			players[i].takeCard(startingCards);
 		};
+
+		stage.addChild(players[0].cardsContainer);
 	}
 
 	function showMainMenu() {
@@ -297,6 +299,8 @@ function subDeck(){
 }
 
 function Player(type, id){
+
+	var self = this;
 	
 	//"ai" or "human" or "internet"
 	this.type = type;
@@ -305,7 +309,7 @@ function Player(type, id){
 	this.id = id;
 
 	//container to hold cards
-	this.cardContainer = new createjs.Container();
+	this.cardsContainer = new createjs.Container();
 
 	//keep the deck private
 	var deck = new subDeck();
@@ -318,6 +322,8 @@ function Player(type, id){
 	//accept card from pile and add it to subdeck
 	this.takeCard = function(cards){
 		deck.addCards(cards);
+		renderCards(cards);
+		placeCards();
 	}
 
 	//function to be called when its this players turn,
@@ -325,5 +331,36 @@ function Player(type, id){
 	//add listeners(if human) or calculate move(if ai)
 	this.consumeMove = function(){
 
+	}
+
+	function renderCards(card){
+
+		var preload = new PreloadSeptica.getInstance();
+
+		if(card instanceof Array){
+			for(var i = 0 ; i < card.length ; i++){
+				var cardBack = new createjs.Bitmap(preload.getImage(card[i].alias));
+				var cardContainer = new createjs.Container();
+				cardContainer.addChild(cardBack);
+				cardContainer.model = card[i];
+				self.cardsContainer.addChild(cardContainer);
+			}
+		} else{
+			var cardBack = new createjs.Bitmap(R.getImage(card.alias));
+			var cardContainer = new createjs.Container();
+			cardContainer.addChild(cardBack);
+			cardContainer.model = card;
+			self.cardsContainer.addChild(cardContainer);
+		}
+	}
+
+	function placeCards(){
+		var cardNum = self.cardsContainer.getNumChildren();
+		var x = 0;
+		for(var i = 0 ; i < cardNum ; i++){
+			var card = self.cardsContainer.getChildAt(i);
+			card.x = x;
+			x += 20;
+		}
 	}
 }
