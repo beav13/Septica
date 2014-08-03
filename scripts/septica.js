@@ -83,14 +83,6 @@ function Septica() {
 			startingCards = this.deck.giveCards(5);
 			players[i].takeCard(startingCards);
 		};
-
-		stage.addChild(players[0].cardsContainer);
-		stage.addChild(players[1].cardsContainer);
-		players[1].cardsContainer.y = 200;
-
-		//TODO remove, here for debug
-		window.player = players[0];
-		window.deck = this.deck;
 	}
 
 	function showMainMenu() {
@@ -165,15 +157,12 @@ function Septica() {
 	}
 
 	function drawPlayerPositions(playerIndex) {
-		// x = cx + r * cos(a)
-		// y = cy + r * sin(a)
-
 		// 
 		var circle = new createjs.Shape();
 		var cx = stage.canvas.width / 2;
 		var cy = stage.canvas.height / 2;
 		var r = 400;
-		var count = 8 ;// players.length; - this should be the number of players, changed it for debugging purposes
+		var count = players.length;
 
 		// this circle represents the "game table" area
 		circle.graphics.beginFill("white").drawCircle(cx, cy, r);
@@ -181,13 +170,13 @@ function Septica() {
 		stage.addChild(circle);
 
 		// draw card hands for each player
-		var angle = 0;
+		var angle = Math.PI / 2;
 		var angleIncrement = 2 * Math.PI / count;
 		for (var i = 0; i < count; i++) {
 			var x = cx + r * Math.cos(angle);
 			var y = cy + r * Math.sin(angle);
 
-			var hand = drawPlayerHand();
+			var hand = players[i].cardsContainer;
 			hand.x = x;
 			hand.y = y;
 			hand.rotation = Math.degrees(angle) + 90;
@@ -201,23 +190,6 @@ function Septica() {
 
 			angle += angleIncrement;
 		}
-	}
-
-	function drawPlayerHand() {
-		var R = new PreloadSeptica.getInstance();
-		var cardBack = new createjs.Bitmap(R.getImage("AS"));
-
-		// draw player hands
-		var cardWidth = cardBack.clone().getBounds().width;
-		
-		var hand = new createjs.Container();
-		for (var i = 0; i < 5; i++) {
-			var card = cardBack.clone();
-			card.x = i * cardWidth / 4;
-			hand.addChild(card);
-		}
-
-		return hand;
 	}
 
 	// degrees to radians
@@ -345,23 +317,22 @@ function Player(type, id){
 
 		if(card instanceof Array){
 			for(var i = 0 ; i < card.length ; i++){
-				var cardImage = (self.type == "human")?new createjs.Bitmap(preload.getImage(card[i].alias))
-														:new createjs.Bitmap(preload.getImage("card_back"));
-				var cardContainer = new createjs.Container();
-				cardContainer.addChild(cardImage);
-				cardContainer.name = card[i].alias;
-				cardContainer.model = card[i];
-				self.cardsContainer.addChild(cardContainer);
+				renderCard(card[i], preload);
 			}
 		} else{
-			var cardImage = (self.type == "human")?new createjs.Bitmap(preload.getImage(card[i].alias))
-														:new createjs.Bitmap(preload.getImage("card_back"));
-			var cardContainer = new createjs.Container();
-			cardContainer.addChild(cardImage);
-			cardContainer.name = card[i].alias;
-			cardContainer.model = card;
-			self.cardsContainer.addChild(cardContainer);
+			renderCard(card[i], preload);
 		}
+	}
+
+	function renderCard(card, preload) {
+		var cardImage = (self.type == "human")?new createjs.Bitmap(preload.getImage(card.alias))
+												:new createjs.Bitmap(preload.getImage("card_back"));
+		var cardContainer = new createjs.Container();
+		cardContainer.addChild(cardImage);
+		cardContainer.name = card.alias;
+		cardContainer.model = card;
+
+		self.cardsContainer.addChild(cardContainer);
 	}
 
 	function placeCards(){
@@ -373,5 +344,7 @@ function Player(type, id){
 			card.x = x;
 			x += space;
 		}
+		// move the registration point on X tot he middle of the movieclip
+		self.cardsContainer.regX = self.cardsContainer.getBounds().width / 2;
 	}
 }
