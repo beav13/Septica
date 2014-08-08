@@ -4,15 +4,12 @@ function Septica() {
 
 	// wtf ?
 	mode = arguments[1];
-	// list of players (those not contained in remotePlayers are AI)
-	players = arguments[2];
-	// list of human players connected remotely
-	remotePlayers = arguments[3];
-	// player index
-	playerIndex = arguments[4]
 
 	//save player references
-	var players = [];
+	players = [];
+
+	// current player's turn
+	currentPlayer = 0;
 	
 	//original cards
 	this.allCardModels;
@@ -51,19 +48,22 @@ function Septica() {
 	function startGame(){
 		console.log("Start game.");
 		
+		// load resources
 		var preloader = new PreloadSeptica.getInstance();
-		this.allCardModels = preloader.getDeck();
 		
-		//create deck
+		// prepare data
+		this.allCardModels = preloader.getDeck();
 		this.deck = new subDeck();
-		//add all cards
+		this.playedDeck = new subDeck();
 		this.deck.addCards(this.allCardModels);
-		//shuffle deck
 		this.deck.shuffle();
-
 		initializePlayers();
 		
+		// draw game
 		drawBoard();
+
+		// start
+		startTurn();
 	}
 
 	function initializePlayers(){
@@ -76,6 +76,7 @@ function Septica() {
 		players.push(p2);
 		players.push(p3);
 		players.push(p4);
+		currentPlayer = 0;
 
 		//give cards
 		for (var i = 0; i < players.length; i++) {
@@ -143,16 +144,15 @@ function Septica() {
 			card.y -= i * 2;
 			middlePot.addChild(card);
 		}
-		// center pot
-		middlePot.x = (stage.canvas.width - middlePot.getBounds().width) / 2;
-		middlePot.y = (stage.canvas.height - middlePot.getBounds().height) /2;
 
-		middlePot.stageResizeHandler = function(){
+		middlePot.placeObject = function(){
 			middlePot.x = (stage.canvas.width - middlePot.getBounds().width) / 2;
 			middlePot.y = (stage.canvas.height - middlePot.getBounds().height) /2;
 		}
 		$(window).on("resize", middlePot.stageResizeHandler);
-		
+
+		// center pot
+		middlePot.placeObject();
 		stage.addChild(middlePot);
 	}
 
@@ -192,17 +192,63 @@ function Septica() {
 		}
 	}
 
-	// degrees to radians
-	Math.radians = function(degrees) {
-		return degrees * Math.PI / 180;
-	};
+	function changePlayer() {
+		currentPlayer++;
+		if (currentPlayer > players.length - 1) {
+			currentPlayer = 0;
+		}
+	}
 
-	// radians to degrees
-	Math.degrees = function(radians) {
-		return radians * 180 / Math.PI;
-	};
+	function endTurn() {
+		changePlayer();
+		startTurn();
+	}
+
+	function startTurn() {
+		var player = players[currentPlayer];
+		if (player.type == "human") {
+			console.log("Human turn");
+
+			function handlePlayerAction(evt) {
+				if (isValid(evt.target.model)) {
+					// target is the clicked card, it's parent is the card container
+					player.cardsContainer.removeEventListener("click", this);
+					// TODO add to playedDeck
+					player.consumeMove(evt.target);
+
+					endTurn();
+				}
+			}
+
+			// attach listener
+			player.cardsContainer.addEventListener("click", handlePlayerAction);
+		} else if (player.type == "ai") {
+			console.log("AI turn");
+
+			// consume first card
+			player.consumeMove(player.cardsContainer.getChildAt(0));
+
+			endTurn();
+		}
+	}
+
+	function isValid(card) {
+		// will check the playedDeck to see if this is a valid move
+		return true;
+	}
 
 }
+
+
+// degrees to radians
+Math.radians = function(degrees) {
+	return degrees * Math.PI / 180;
+};
+
+// radians to degrees
+Math.degrees = function(radians) {
+	return radians * 180 / Math.PI;
+};
 
 function subDeck(){
 
@@ -300,26 +346,27 @@ function Player(type, id){
 	//accept card from pile and add it to subdeck
 	this.takeCard = function(cards){
 		deck.addCards(cards);
-		renderCards(cards);
+		renderCards();
 		placeCards();
 	}
 
 	//function to be called when its this players turn,
 	//it will calculate if the player has moves, if it should 
 	//add listeners(if human) or calculate move(if ai)
-	this.consumeMove = function(){
-
+	this.consumeMove = function(card){
+		this.cardsContainer.removeChild(card);
+		placeCards();
 	}
 
-	function renderCards(card){
-
+	function renderCards(){
 		var preload = new PreloadSeptica.getInstance();
+		var card = deck.getCards();
 
 		if(card instanceof Array){
 			for(var i = 0 ; i < card.length ; i++){
 				renderCard(card[i], preload);
 			}
-		} else{
+		} else {
 			renderCard(card[i], preload);
 		}
 	}
@@ -328,6 +375,7 @@ function Player(type, id){
 		var cardImage = (self.type == "human")?new createjs.Bitmap(preload.getImage(card.alias))
 												:new createjs.Bitmap(preload.getImage("card_back"));
 		var cardContainer = new createjs.Container();
+		cardContainer.mouseChildren = false;
 		cardContainer.addChild(cardImage);
 		cardContainer.name = card.alias;
 		cardContainer.model = card;
