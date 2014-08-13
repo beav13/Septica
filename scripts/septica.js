@@ -60,7 +60,10 @@ function Septica() {
 		initializePlayers();
 		
 		// draw game
-		drawBoard();
+		renderBoard();
+
+		// add resize listener
+		$(window).on("resize", stageResize);
 
 		// start
 		startTurn();
@@ -126,13 +129,20 @@ function Septica() {
 		stage.addChild(button);
 		stage.update();
 	}
+
+	function stageResize() {
+		placeMiddlePot();
+		placePlayerPositions();
+	}
 	
-	function drawBoard() {
-		drawPlayerPositions();
-		drawMiddlePot();
+	function renderBoard() {
+		renderPlayerPositions();
+		renderMiddlePot();
+
+		stageResize();
 	}
 
-	function drawMiddlePot() {
+	function renderMiddlePot() {
 		// draw middle deck
 		var R = new PreloadSeptica.getInstance();
 		var cardBack = new createjs.Bitmap(R.getImage("card_back"));
@@ -145,31 +155,49 @@ function Septica() {
 			middlePot.addChild(card);
 		}
 
-		middlePot.placeObject = function(){
-			middlePot.x = (stage.canvas.width - middlePot.getBounds().width) / 2;
-			middlePot.y = (stage.canvas.height - middlePot.getBounds().height) /2;
-		}
-		$(window).on("resize", middlePot.stageResizeHandler);
-
 		// center pot
-		middlePot.placeObject();
+		middlePot.name = "middlePot";
 		stage.addChild(middlePot);
 	}
 
-	function drawPlayerPositions(playerIndex) {
+	function placeMiddlePot() {
+		var middlePot = stage.getChildByName("middlePot");
+		middlePot.x = (stage.canvas.width - middlePot.getBounds().width) / 2;
+		middlePot.y = (stage.canvas.height - middlePot.getBounds().height) /2;
+	}
+
+	function renderPlayerPositions() {
 		// 
+		var r = Math.floor(stage.canvas.height / 2.5);
+		// this circle represents the "game table" area
 		var circle = new createjs.Shape();
-		var cx = stage.canvas.width / 2;
-		var cy = stage.canvas.height / 2;
-		var r = 400;
+		circle.graphics.beginFill("white").drawCircle(0, 0, r);
+		circle.alpha = 0.2;
+
+		var circleContainer = new createjs.Container();
+		// container (0,0) will be the center of the circle
+		circleContainer.addChild(circle);
+		circleContainer.setBounds(0,0,r,r);
+		circleContainer.name = "tableCircle";
+		circleContainer.initialR = r;
+		stage.addChild(circleContainer);
+	}
+
+	function placePlayerPositions() {
+		var circle = new createjs.Shape();
+		var cx = Math.floor(stage.canvas.width / 2);
+		var cy = Math.floor(stage.canvas.height / 2);
+		var r = Math.floor(stage.canvas.height / 2.5);
 		var count = players.length;
 
-		// this circle represents the "game table" area
-		circle.graphics.beginFill("white").drawCircle(cx, cy, r);
-		circle.alpha = 0.2;
-		stage.addChild(circle);
+		var circleContainer = stage.getChildByName("tableCircle");
+		//
+		circleContainer.scaleX = r / circleContainer.initialR;
+		circleContainer.scaleY = r / circleContainer.initialR;
+		circleContainer.x = stage.canvas.width / 2;
+		circleContainer.y = stage.canvas.height /2;
 
-		// draw card hands for each player
+		// place card hands for each player
 		var angle = Math.PI / 2;
 		var angleIncrement = 2 * Math.PI / count;
 		for (var i = 0; i < count; i++) {
@@ -183,10 +211,10 @@ function Septica() {
 			stage.addChild(hand);
 
 			// player center represents the player's position at the table
-			var playerCenter = new createjs.Shape();
+			/*var playerCenter = new createjs.Shape();
 			playerCenter.graphics.beginFill("cyan").drawCircle(x, y, 20);
 			playerCenter.alpha = 0.4;
-			stage.addChild(playerCenter);
+			stage.addChild(playerCenter);*/
 
 			angle += angleIncrement;
 		}
@@ -206,28 +234,33 @@ function Septica() {
 
 	function startTurn() {
 		var player = players[currentPlayer];
-		if (player.type == "human") {
-			console.log("Human turn");
 
-			function handlePlayerAction(evt) {
-				if (isValid(evt.target.model)) {
-					// target is the clicked card, it's parent is the card container
-					player.cardsContainer.removeEventListener("click", this);
-					// TODO add to playedDeck
-					player.consumeMove(evt.target);
+		if (player.active) {
+			if (player.type == "human") {
+				console.log("Human turn");
 
-					endTurn();
+				function handlePlayerAction(evt) {
+					if (isValid(evt.target.model)) {
+						player.cardsContainer.removeAllEventListeners();
+						player.consumeMove(evt.target);
+						var cards = deck.giveCards(1);
+						player.takeCard(cards);
+
+						endTurn();
+					}
 				}
+
+				// attach listener
+				player.cardsContainer.addEventListener("click", handlePlayerAction);
+			} else if (player.type == "ai") {
+				console.log("AI turn");
+
+				// consume first card
+				player.consumeMove(player.cardsContainer.getChildAt(0));
+
+				endTurn();
 			}
-
-			// attach listener
-			player.cardsContainer.addEventListener("click", handlePlayerAction);
-		} else if (player.type == "ai") {
-			console.log("AI turn");
-
-			// consume first card
-			player.consumeMove(player.cardsContainer.getChildAt(0));
-
+		} else {
 			endTurn();
 		}
 	}
@@ -332,42 +365,45 @@ function Player(type, id){
 	//id will only be present if its a human internet player
 	this.id = id;
 
+	// marks if this player is still in the game
+	this.active = true;
+
 	//container to hold cards
 	this.cardsContainer = new createjs.Container();
 
-	//keep the deck private
+	// keep deck private
 	var deck = new subDeck();
 
-	//place a card down and remove it from subdeck
-	this.giveCard = function(card){
-
-	}
-
-	//accept card from pile and add it to subdeck
+	// accept card from pile and add it to subdeck
 	this.takeCard = function(cards){
 		deck.addCards(cards);
-		renderCards();
+		renderCards(cards);
 		placeCards();
 	}
 
-	//function to be called when its this players turn,
-	//it will calculate if the player has moves, if it should 
-	//add listeners(if human) or calculate move(if ai)
+	// function that plays out the move for this player
 	this.consumeMove = function(card){
 		this.cardsContainer.removeChild(card);
+		deck.removeCards(card.model);
+		// put card in the played deck
+		playedDeck.addCards(card);
+
+		if (deck.getCards().length == 0) {
+			this.active = false;
+		}
+		
 		placeCards();
 	}
 
-	function renderCards(){
+	function renderCards(cards){
 		var preload = new PreloadSeptica.getInstance();
-		var card = deck.getCards();
 
-		if(card instanceof Array){
-			for(var i = 0 ; i < card.length ; i++){
-				renderCard(card[i], preload);
+		if(cards instanceof Array){
+			for(var i = 0 ; i < cards.length ; i++){
+				renderCard(cards[i], preload);
 			}
 		} else {
-			renderCard(card[i], preload);
+			renderCard(cards, preload);
 		}
 	}
 
@@ -385,7 +421,12 @@ function Player(type, id){
 
 	function placeCards(){
 		var cardNum = self.cardsContainer.getNumChildren();
-		var x = 0;		
+		// if no children, skip placing
+		if (cardNum == 0) {
+			return;
+		}
+
+		var x = 0;
 		for(var i = 0 ; i < cardNum ; i++){
 			var card = self.cardsContainer.getChildAt(i);
 			var space = (self.type == "human")?(card.getBounds().width + 5):20;

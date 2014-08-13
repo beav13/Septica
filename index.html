@@ -27,7 +27,7 @@ function startApp(){
 
 	// disable image smoothing (cards look shitty this way)
 	var ctx = canvas.getContext('2d');
-	ctx.webkitImageSmoothingEnabled = false;
+	ctx.webkitImageSmoothingEnabled = true;
 
 	// initialize Septica
 	var game = new Septica("stage");
