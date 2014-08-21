@@ -10,6 +10,12 @@ function Septica() {
 
 	// current player's turn
 	currentPlayer = 0;
+
+	// game settings
+	settings = {cardW:72, cardH:96};
+
+	// preloader reference
+	R = new PreloadSeptica.getInstance();
 	
 	//original cards
 	this.allCardModels;
@@ -23,16 +29,13 @@ function Septica() {
 	this.start = function() {
 		console.log("starting Septica");
 
-		// send resources to load to the preloader
-		var preloader = new PreloadSeptica.getInstance();
-
 		// define phases and what resources to load for each phase
 		var jsonPhase = { id: "JSON", text: "Loading JSON", manifest: [{id:"deck", src:"resources/deck.json"}] };
 		var imgPhase = { id: "IMG", text: "Loading Images", manifest: [{id:"card_back", src:"images/card_back.png" }]};
 		var soundPhase = { id: "SOUND", text: "Loading Sound", manifest: [{id:"test", src:"test -- will show 404 in the console"}] };
 		var phases = [jsonPhase, imgPhase, soundPhase];
 
-		preloader.loadResources(onLoadComplete, stage, phases);
+		R.loadResources(onLoadComplete, stage, phases);
 	}
 
 	function onLoadComplete() {
@@ -48,11 +51,8 @@ function Septica() {
 	function startGame(){
 		console.log("Start game.");
 		
-		// load resources
-		var preloader = new PreloadSeptica.getInstance();
-		
 		// prepare data
-		this.allCardModels = preloader.getDeck();
+		this.allCardModels = R.getDeck();
 		this.deck = new subDeck();
 		this.playedDeck = new subDeck();
 		this.deck.addCards(this.allCardModels);
@@ -62,8 +62,12 @@ function Septica() {
 		// draw game
 		renderBoard();
 
+
 		// add resize listener
 		$(window).on("resize", stageResize);
+
+		// draw first card
+		drawFirstCard();
 
 		// start
 		startTurn();
@@ -144,16 +148,23 @@ function Septica() {
 
 	function renderMiddlePot() {
 		// draw middle deck
-		var R = new PreloadSeptica.getInstance();
 		var cardBack = new createjs.Bitmap(R.getImage("card_back"));
 		
 		var middlePot = new createjs.Container();
+
+		var unplayedPot = new createjs.Container();
 		for (var i = 0; i < 3; i++) {
 			var card = cardBack.clone();
 			card.x += i * 2;
 			card.y -= i * 2;
-			middlePot.addChild(card);
+			unplayedPot.addChild(card);
 		}
+		var playedPot = new createjs.Container();
+		playedPot.name = "playedPot";
+
+		unplayedPot.x = settings.cardW + 5;
+		middlePot.addChild(playedPot);
+		middlePot.addChild(unplayedPot);
 
 		// center pot
 		middlePot.name = "middlePot";
@@ -220,6 +231,12 @@ function Septica() {
 		}
 	}
 
+	function drawFirstCard() {
+		var card = deck.giveCards(1);
+		var playedPot = stage.getChildByName("middlePot").getChildByName("playedPot");
+		playedPot.addChild(card);
+	}
+
 	function changePlayer() {
 		currentPlayer++;
 		if (currentPlayer > players.length - 1) {
@@ -266,6 +283,7 @@ function Septica() {
 	}
 
 	function isValid(card) {
+		console.log(playedDeck.getCards()[playedDeck.getCards().length-1]);
 		// will check the playedDeck to see if this is a valid move
 		return true;
 	}
@@ -396,20 +414,18 @@ function Player(type, id){
 	}
 
 	function renderCards(cards){
-		var preload = new PreloadSeptica.getInstance();
-
 		if(cards instanceof Array){
 			for(var i = 0 ; i < cards.length ; i++){
-				renderCard(cards[i], preload);
+				renderCard(cards[i]);
 			}
 		} else {
-			renderCard(cards, preload);
+			renderCard(cards);
 		}
 	}
 
-	function renderCard(card, preload) {
-		var cardImage = (self.type == "human")?new createjs.Bitmap(preload.getImage(card.alias))
-												:new createjs.Bitmap(preload.getImage("card_back"));
+	function renderCard(card) {
+		var cardImage = (self.type == "human")?new createjs.Bitmap(R.getImage(card.alias))
+												:new createjs.Bitmap(R.getImage("card_back"));
 		var cardContainer = new createjs.Container();
 		cardContainer.mouseChildren = false;
 		cardContainer.addChild(cardImage);
@@ -429,7 +445,7 @@ function Player(type, id){
 		var x = 0;
 		for(var i = 0 ; i < cardNum ; i++){
 			var card = self.cardsContainer.getChildAt(i);
-			var space = (self.type == "human")?(card.getBounds().width + 5):20;
+			var space = (self.type == "human")?(settings.cardW + 5):20;
 			card.x = x;
 			x += space;
 		}
