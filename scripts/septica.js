@@ -1,4 +1,6 @@
 function Septica() {
+
+	var self = this;
 	
 	stage = new createjs.Stage(arguments[0]);
 
@@ -6,7 +8,7 @@ function Septica() {
 	mode = arguments[1];
 
 	//save player references
-	players = [];
+	var players = [];
 
 	// current player's turn
 	currentPlayer = 0;
@@ -52,11 +54,11 @@ function Septica() {
 		console.log("Start game.");
 		
 		// prepare data
-		this.allCardModels = R.getDeck();
-		this.deck = new subDeck();
-		this.playedDeck = new subDeck();
-		this.deck.addCards(this.allCardModels);
-		this.deck.shuffle();
+		self.allCardModels = R.getDeck();
+		self.playedDeck = new subDeck();
+		self.deck = new subDeck(self.playedDeck);		
+		self.deck.addCards(self.allCardModels);
+		self.deck.shuffle();
 		initializePlayers();
 		
 		// draw game
@@ -88,7 +90,7 @@ function Septica() {
 		//give cards
 		for (var i = 0; i < players.length; i++) {
 			var startingCards = [];
-			startingCards = this.deck.giveCards(5);
+			startingCards = self.deck.giveCards(5);
 			players[i].takeCard(startingCards);
 		};
 	}
@@ -124,7 +126,7 @@ function Septica() {
 		
 		$(window).on("resize", windowResizeHandler);
 		
-		button.addEventListener("click", function(){
+		button.on("click", function(){
 			stage.removeChild(button);
 			$(window).off("resize", windowResizeHandler);
 			startGame();
@@ -159,6 +161,7 @@ function Septica() {
 			card.y -= i * 2;
 			unplayedPot.addChild(card);
 		}
+		unplayedPot.name = "unplayedPot";
 		var playedPot = new createjs.Container();
 		playedPot.name = "playedPot";
 
@@ -232,9 +235,18 @@ function Septica() {
 	}
 
 	function drawFirstCard() {
-		var card = deck.giveCards(1);
+		var card = self.deck.giveCards(1)[0];
+
+		var cardImage = new createjs.Bitmap(R.getImage(card.alias));
+		var cardContainer = new createjs.Container();
+		cardContainer.mouseChildren = false;
+		cardContainer.addChild(cardImage);
+		cardContainer.name = card.alias;
+		cardContainer.model = card;
+		
 		var playedPot = stage.getChildByName("middlePot").getChildByName("playedPot");
-		playedPot.addChild(card);
+		self.playedDeck.addCards(card);
+		playedPot.addChild(cardContainer);
 	}
 
 	function changePlayer() {
@@ -260,20 +272,41 @@ function Septica() {
 					if (isValid(evt.target.model)) {
 						player.cardsContainer.removeAllEventListeners();
 						player.consumeMove(evt.target);
-						var cards = deck.giveCards(1);
-						player.takeCard(cards);
-
+						// put card in the played deck
+						self.playedDeck.addCards(evt.target.model);
+						var pot = stage.getChildByName("middlePot").getChildByName("playedPot");
+						stage.getChildByName("middlePot").getChildByName("unplayedPot").removeAllEventListeners();
+						pot.removeAllChildren();
+						evt.target.x = 0;
+						evt.target.y = 0;
+						pot.addChild(evt.target);
 						endTurn();
 					}
 				}
 
+				function getCardFromDeck(evt){
+					player.takeCard(self.deck.giveCards(1));
+					player.cardsContainer.removeAllEventListeners();
+					stage.getChildByName("middlePot").getChildByName("unplayedPot").removeAllEventListeners();
+					endTurn();
+				}
+
 				// attach listener
 				player.cardsContainer.addEventListener("click", handlePlayerAction);
-			} else if (player.type == "ai") {
-				console.log("AI turn");
+				stage.getChildByName("middlePot").getChildByName("unplayedPot").addEventListener("click", getCardFromDeck);
 
-				// consume first card
-				player.consumeMove(player.cardsContainer.getChildAt(0));
+			} else if (player.type == "ai") {
+				var aiCard = player.consumeAiMove(self.playedDeck.getLastAddedCard());
+				if(aiCard){//if player returned a card, handle it
+					self.playedDeck.addCards(aiCard.model);
+					var pot = stage.getChildByName("middlePot").getChildByName("playedPot");
+					pot.removeAllChildren();
+					aiCard.x = 0;
+					aiCard.y = 0;
+					pot.addChild(aiCard);
+				}else{//get a card
+					player.takeCard(self.deck.giveCards(1));
+				}
 
 				endTurn();
 			}
@@ -283,28 +316,34 @@ function Septica() {
 	}
 
 	function isValid(card) {
-		console.log(playedDeck.getCards()[playedDeck.getCards().length-1]);
-		// will check the playedDeck to see if this is a valid move
-		return true;
+		var lastCard = self.playedDeck.getLastAddedCard();
+		//TODO think of mechanism to handle 7
+		if((lastCard.value == card.value) || (lastCard.type == card.type)){
+			return true;
+		}
+		return false;
 	}
 
 }
 
+/**
+*	Class - creates a deck
+*
+*	@param fallbackDeck - deck from which cards will be taken when current deck reaches 0 cards
+*/
+function subDeck(fallbackDeck){
 
-// degrees to radians
-Math.radians = function(degrees) {
-	return degrees * Math.PI / 180;
-};
-
-// radians to degrees
-Math.degrees = function(radians) {
-	return radians * 180 / Math.PI;
-};
-
-function subDeck(){
-
+	//holds the cards for this deck
 	var cards = [];
+	//fallback deck from which cards will be taken when
+	//current deck reaches 0 cards
+	var fallbackDeck = fallbackDeck;
 	
+	/**
+	*	Shuffles an array
+	*
+	*	@param theArray - array to be shuffled
+	*/
 	function arrayShuffle(theArray) {
 		var len = theArray.length;
 		var i = len;
@@ -316,6 +355,11 @@ function subDeck(){
 		}
 	};
 	
+	/**
+	*	Adds card models to the deck
+	*
+	*	@params c - single card model or array of card models
+	*/
 	this.addCards = function(c){
 		if(c instanceof Array){
 			for(var i = 0 ; i < c.length ; i++){
@@ -326,6 +370,11 @@ function subDeck(){
 		}		
 	}
 	
+	/**
+	*	Removes card models from deck
+	*
+	*	@params card - single card model or array of card models
+	*/
 	this.removeCards = function(card){
 		//keep index of cards to be deleted
 		if(card instanceof Array){
@@ -347,9 +396,14 @@ function subDeck(){
 		}
 	}
 
-	//TODO check cards exist
+	/**
+	*	Returns card models from deck, removes them aswell
+	*
+	*	@params howMany - int - number of cards to be returned
+	*/
 	this.giveCards = function(howMany){
-		if(howMany){
+		this.verifyCanGive(howMany);
+		if(howMany){			
 			var returnCards = [];
 			for(var i = 0 ; i < howMany ; i++){
 				returnCards.push(cards[i]);			
@@ -362,17 +416,85 @@ function subDeck(){
 			return card;
 		}
 	}
+
+	/**
+	*	Checks if we can give howMany cards(or at least 1), if not,
+	*	gets cards from the fallback deck
+	*
+	*	@params howMany - int - number of cards to be returned
+	*/
+	this.verifyCanGive = function(howMany){
+		//check if we can give howMany cards, or at least 1
+		//if not, get cards from fallback deck
+		if((howMany || 2) > cards.length){
+			console.log('o trecut');
+			//possible breakage point, although fallback should always have more than 2 cards
+			this.addCards(fallbackDeck.giveCards(fallbackDeck.getCardCount()-2));
+			this.shuffle();
+		}
+	}
 	
+	/**
+	*	Shuffles cards in deck
+	*/
 	this.shuffle = function(){
 		arrayShuffle(cards);
 	}
+
+	/**
+	*	Returns the last added card
+	*/
+	this.getLastAddedCard = function(){
+		return cards[cards.length-1];
+	}
+
+	/**
+	*	Returns the first card of the given type
+	*
+	*	@params type - string - type of card
+	*/
+	this.getCardByType = function(type){
+		for(var i = 0 ; i < cards.length ; i++){
+			if(cards[i].type == type){
+				return cards[i];
+			}
+		}
+	}
+
+	/**
+	*	Returns the first card of the given val
+	*
+	*	@params val - int - value of card
+	*/
+	this.getCardByValue = function(val){
+		for(var i = 0 ; i < cards.length ; i++){
+			if(cards[i].van == val){
+				return cards[i];
+			}
+		}
+	}
+
+	/**
+	*	Returns the number of cards in the deck
+	*/
+	this.getCardCount = function(){
+		return cards.length
+	}
 	
-	//temporary, for debug
+	/**
+	*	Temporary, for debug
+	*/
 	this.getCards = function(){
 		return cards;
 	}
 }
 
+/**
+*	Class - creates a player
+*
+*	@param type - string - human/ai/internet
+*	@param id - string
+*/
 function Player(type, id){
 
 	var self = this;
@@ -392,19 +514,25 @@ function Player(type, id){
 	// keep deck private
 	var deck = new subDeck();
 
-	// accept card from pile and add it to subdeck
+	/**
+	*	Accept card model and add it to deck
+	*
+	*	@params card - card models
+	*/
 	this.takeCard = function(cards){
 		deck.addCards(cards);
 		renderCards(cards);
 		placeCards();
 	}
 
-	// function that plays out the move for this player
+	/**
+	*	Handle move for player
+	*
+	*	@params card - card view
+	*/
 	this.consumeMove = function(card){
 		this.cardsContainer.removeChild(card);
-		deck.removeCards(card.model);
-		// put card in the played deck
-		playedDeck.addCards(card);
+		deck.removeCards(card.model);		
 
 		if (deck.getCards().length == 0) {
 			this.active = false;
@@ -413,6 +541,30 @@ function Player(type, id){
 		placeCards();
 	}
 
+	/**
+	*	Handle ai move:
+	*		see if has a valid card and return it
+	*		if not, a card will be given to the player by the game
+	*
+	*	@params card - card model
+	*/
+	this.consumeAiMove = function(card){
+		var selectCard = deck.getCardByType(card.type) || deck.getCardByType(card.val);
+		if(selectCard){//remove card and return it
+			console.log('AI:'+ self.id + ' pune ' + selectCard.alias);
+			var cardView = this.cardsContainer.getChildByName(selectCard.alias);
+			cardView.addChild(new createjs.Bitmap(R.getImage(selectCard.alias)));
+			this.consumeMove(cardView);
+			return cardView;
+		}
+		console.log('AI:'+ self.id + ' a luat carte.');
+	}
+
+	/**
+	*	Renders cards
+	*
+	*	@params cards - card models
+	*/
 	function renderCards(cards){
 		if(cards instanceof Array){
 			for(var i = 0 ; i < cards.length ; i++){
@@ -423,6 +575,11 @@ function Player(type, id){
 		}
 	}
 
+	/**
+	*	Creates a single card view and adds it to the cardsContainer
+	*
+	*	@params card - card model
+	*/
 	function renderCard(card) {
 		var cardImage = (self.type == "human")?new createjs.Bitmap(R.getImage(card.alias))
 												:new createjs.Bitmap(R.getImage("card_back"));
@@ -435,6 +592,9 @@ function Player(type, id){
 		self.cardsContainer.addChild(cardContainer);
 	}
 
+	/**
+	*	Positiones the cards in the cards container
+	*/
 	function placeCards(){
 		var cardNum = self.cardsContainer.getNumChildren();
 		// if no children, skip placing
@@ -453,3 +613,13 @@ function Player(type, id){
 		self.cardsContainer.regX = self.cardsContainer.getBounds().width / 2;
 	}
 }
+
+// degrees to radians
+Math.radians = function(degrees) {
+	return degrees * Math.PI / 180;
+};
+
+// radians to degrees
+Math.degrees = function(radians) {
+	return radians * 180 / Math.PI;
+};
