@@ -268,6 +268,38 @@ function Septica() {
 			if (player.type == "human") {
 				console.log("Human turn");
 
+				var currentPlayedCardValue = self.playedDeck.getLastAddedCard().value;
+				switch(currentPlayedCardValue){
+					case 1:
+						if(player.hasSpecialCardA()){//does he have another A ?
+							player.cardsContainer.addEventListener("click", handlePlayerAction);
+						}else{
+							console.log('Human doesn`t have an A');
+							endTurn();
+						}
+						break;
+
+					case 12:
+						if(player.hasSpecialCardJ()){//does he have another J ?
+							player.cardsContainer.addEventListener("click", handlePlayerAction);
+						}else{
+							//TODO 2 is a placeholder
+							player.takeCard(self.deck.giveCards(2));
+							console.log('Human doesn`t have a J');
+							endTurn();
+						}
+						break;
+
+					case 7:
+						//vai
+						//break;
+
+					default:
+					// attach listener
+					player.cardsContainer.addEventListener("click", handlePlayerAction);
+					stage.getChildByName("middlePot").getChildByName("unplayedPot").addEventListener("click", getCardFromDeck);
+				}
+
 				function handlePlayerAction(evt) {
 					if (isValid(evt.target.model)) {
 						player.cardsContainer.removeAllEventListeners();
@@ -290,11 +322,6 @@ function Septica() {
 					stage.getChildByName("middlePot").getChildByName("unplayedPot").removeAllEventListeners();
 					endTurn();
 				}
-
-				// attach listener
-				player.cardsContainer.addEventListener("click", handlePlayerAction);
-				stage.getChildByName("middlePot").getChildByName("unplayedPot").addEventListener("click", getCardFromDeck);
-
 			} else if (player.type == "ai") {
 				var aiCard = player.consumeAiMove(self.playedDeck.getLastAddedCard());
 				if(aiCard){//if player returned a card, handle it
@@ -558,6 +585,14 @@ function Player(type, id){
 			return cardView;
 		}
 		console.log('AI:'+ self.id + ' a luat carte.');
+	}
+
+	this.hasSpecialCardA = function(){
+		return (deck.getCardByValue(1))?true:false;
+	}
+
+	this.hasSpecialCardJ = function(){
+		return (deck.getCardByValue(2))?true:false;
 	}
 
 	/**
